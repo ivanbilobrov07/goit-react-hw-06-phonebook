@@ -1,7 +1,8 @@
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useEffect, useState } from 'react';
 
 import { editContact } from 'redux/slices/contactsSlice';
+import { getContacts, getFilter } from 'redux/selectors';
 
 import {
   Table,
@@ -12,12 +13,15 @@ import {
 import { FormModal } from 'components/App/App.styled';
 import { ContactForm } from 'components/ContactForm';
 import { ContactItem } from 'components/ContactItem';
+import { Message } from 'components/Message';
 
-export const ContactList = ({ contacts }) => {
+export const ContactList = () => {
+  const contacts = useSelector(getContacts);
+  const filter = useSelector(getFilter);
+  const dispatch = useDispatch();
+
   const [isEditModalShown, setIsEditModalShown] = useState(false);
   const [editItemId, setEditItemId] = useState(null);
-
-  const dispatch = useDispatch();
 
   useEffect(() => {
     closeModal();
@@ -48,37 +52,47 @@ export const ContactList = ({ contacts }) => {
     });
   };
 
+  const getFilteredContacts = () =>
+    contacts.filter(({ name }) => name.toLowerCase().includes(filter));
+
+  const filteredContacts = getFilteredContacts();
+
   return (
     <>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <th>Names</th>
-            <th>Phone Number</th>
-            <TableTitleCell>Edit</TableTitleCell>
-            <TableTitleCell>Delete</TableTitleCell>
-          </TableRow>
-        </TableHeader>
-        <tbody>
-          {contacts.map(({ name, number, id }) => (
-            <TableRow key={id}>
-              <ContactItem
-                id={id}
-                name={name}
-                number={number}
-                openModal={openModal}
-              />
+      {filteredContacts.length ? (
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <th>Names</th>
+              <th>Phone Number</th>
+              <TableTitleCell>Edit</TableTitleCell>
+              <TableTitleCell>Delete</TableTitleCell>
             </TableRow>
-          ))}
-        </tbody>
-      </Table>
+          </TableHeader>
+          <tbody>
+            {filteredContacts.map(({ name, number, id }) => (
+              <TableRow key={id}>
+                <ContactItem
+                  id={id}
+                  name={name}
+                  number={number}
+                  openModal={openModal}
+                />
+              </TableRow>
+            ))}
+          </tbody>
+        </Table>
+      ) : (
+        <Message text="There are no contacts here" />
+      )}
+
       {isEditModalShown && (
         <FormModal onClose={closeModal}>
           <ContactForm
             handleContactChange={handleEditContact}
             findContactByName={findContactByName}
             findContactByNumber={findContactByNumber}
-            initialValues={contacts.find(({ id }) => id === editItemId)}
+            initialValues={filteredContacts.find(({ id }) => id === editItemId)}
           />
         </FormModal>
       )}
