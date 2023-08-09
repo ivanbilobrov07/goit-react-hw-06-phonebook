@@ -12,9 +12,9 @@ import { Container, Title, FormModal } from './App.styled';
 
 export const App = () => {
   const [isModalShown, setIsModalShown] = useState(false);
-
   const contacts = useSelector(getContacts);
   const filter = useSelector(getFilter);
+
   const dispatch = useDispatch();
 
   const getFilteredContacts = () =>
